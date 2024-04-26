@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "fircode"
+version = "0.1.0"
+description = "Code base of the Elkin code hakaton"
+authors = ["gogacoder <me@gogacoder.com>"]
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.110.2"
+tortoise-orm = "^0.20.0"
+bcrypt = "^4.1.2"
+uvicorn = {extras = ["standard"], version = "^0.29.0"}
+jinja2 = "^3.1.3"
+python-dotenv = "^1.0.1"
+asyncpg = "^0.29.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+start = "fircode.main:start"
