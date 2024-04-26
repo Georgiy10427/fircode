@@ -1,11 +1,6 @@
-from dataclasses import field
-from enum import unique
 from pydantic.networks import MAX_EMAIL_LENGTH
 from tortoise import fields
 from tortoise import models
-from tortoise.contrib.pydantic import pydantic_model_creator
-from pydantic import BaseModel
-from pydantic import constr
 
 
 class User(models.Model):
