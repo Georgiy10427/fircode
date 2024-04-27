@@ -6,6 +6,8 @@ from fircode.models import UserRegistrationRequest
 from fircode.user_utils import create_user
 from fircode.exceptions import UserAlreadyExists
 from fastapi.exceptions import HTTPException
+from fircode import config
+from fastapi.middleware.cors import CORSMiddleware
 
 
 app: FastAPI = FastAPI(title="root app")
@@ -13,6 +15,22 @@ api_app: FastAPI = FastAPI(title="api app")
 
 app.mount("/api", api_app)
 app.mount("/", StaticFiles(directory="frontend", html=True), name="static")
+
+if config.debug:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+    api_app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
 initialize_database(app)
 app.router.on_startup.append(database_setup)
