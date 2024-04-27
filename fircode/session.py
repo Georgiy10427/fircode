@@ -1,4 +1,4 @@
-from fircode.models import User, SessionToken, SignInRequest
+from fircode.models import User, SessionToken, SignInRequest, UserResponse
 from bcrypt import checkpw
 import secrets
 from fastapi import Response, Request
@@ -7,7 +7,7 @@ from fastapi.exceptions import HTTPException
 from fircode.config import session_token_lenght
 from tortoise.exceptions import DoesNotExist
 from fircode.config import debug
-from typing import Union, Optional
+from typing import Union
 import datetime
 from fircode.config import session_max_time
 
@@ -67,7 +67,7 @@ class Session:
             try:
                 src_token = request.cookies["session"]
                 token = await SessionToken.get(token=src_token)
-                self.user = token.user
+                self.user = await UserResponse.from_queryset_single(token.user.get())
                 self.token = src_token
             except DoesNotExist:
                 raise HTTPException(status_code=401, detail="Invalid token")

@@ -1,22 +1,27 @@
 import uvicorn
 from fastapi import FastAPI
 from fastapi import Request
-from fastapi.staticfiles import StaticFiles
+from fircode.spa_static_files import SinglePageApplication
 from fircode.startup import initialize_database, database_setup
-from fircode.models import UserRegistrationRequest, SignInRequest, UserResponse
+from fircode.models import *
 from fircode.user_utils import create_user
 from fircode.exceptions import UserAlreadyExists
 from fastapi.exceptions import HTTPException
+from fastapi.responses import JSONResponse
 from fircode import config
+from typing import List
 from fastapi.middleware.cors import CORSMiddleware
 from fircode.session import Session, session_responses
+from fastapi.templating import Jinja2Templates
 
 
 app: FastAPI = FastAPI(title="root app")
 api_app: FastAPI = FastAPI(title="api app")
 
 app.mount("/api", api_app)
-app.mount("/", StaticFiles(directory="frontend", html=True), name="static")
+app.mount("/", app=SinglePageApplication(directory="frontend"), name="static")
+templates = Jinja2Templates(directory="frontend")
+
 
 if config.debug:
     app.add_middleware(
@@ -64,16 +69,63 @@ async def login(request: SignInRequest):
 
 @api_app.get("/user", responses=session_responses, response_model=UserResponse)
 async def current_user(request: Request):
+    """Provide information about current user"""
     session = Session()
     await session.get_from_request(request)
-    return await UserResponse.from_queryset_single(session.user.get())
+    return session.user
 
 
 @api_app.post("/logout")
 async def logout(request: Request):
+    """Logout from current user"""
     return await Session().close_session(request)
+
+
+@api_app.get("/dogs", response_model=List[DogOut])
+async def get_all_dogs():
+    """Provide list of all dogs"""
+    return await Dog.all()
+
+
+@api_app.post("/dog", responses={**session_responses, 405: {"Method not allowed": {}}})
+async def add_dog(request: Request, new_dog: DogIn):
+    """Add dog"""
+    session = Session()
+    await session.get_from_request(request)
+    if session.user.is_admin:
+        dog = await Dog.create(**new_dog.dict(exclude_unset=True))
+        return dog
+    else:
+        return JSONResponse(status_code=405, content="You doesn't have permissions to add dog")
+
+
+@api_app.put("/dog", responses={**session_responses, 405: {"Method not allowed": {}}})
+async def update_dog(request: Request, new_instance: DogOut):
+    """Update an instance of the dog"""
+    session = Session()
+    await session.get_from_request(request)
+    if session.user.is_admin:
+        await Dog.filter(id=new_instance.id).update(**new_instance.model_dump(exclude={"id"}))
+        return await DogOut.from_queryset_single(Dog.get(id=new_instance.id))
+    else:
+        return JSONResponse(status_code=405, content="You doesn't have permissions to add dog")
+
+
+@api_app.delete("/dog")
+async def delete_dog(request: Request, dog_id: int):
+    """Delete dog from shelter"""
+    session = Session()
+    await session.get_from_request(request)
+    if session.user.is_admin:
+        await Dog.filter(id=dog_id).delete()
+    else:
+        return JSONResponse(status_code=405, content="You doesn't have permissions to delete dog")
 
 
 def start():
     """Launch uvicorn application"""
     uvicorn.run("fircode.main:app", host="127.0.0.1", port=8000, reload=True)
+
+
+if __name__ == '__main__':
+    start()

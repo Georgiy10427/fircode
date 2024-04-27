@@ -10,7 +10,7 @@ if debug:
 
 
 # Session settings
-bcrypt_rounds: int = int(os.environ.get("BCRYPT_ROUNDS", 15))
+bcrypt_rounds: int = int(os.environ.get("BCRYPT_ROUNDS", 8))
 session_token_lenght: int = int(os.environ.get("SESSION_TOKEN_LENGHT", 230))
 session_max_time: timedelta = timedelta(
         days=int(os.environ.get("SESSION_TIME", 30))

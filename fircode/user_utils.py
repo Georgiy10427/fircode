@@ -20,6 +20,7 @@ async def create_user(
         first_name: str,
         second_name: str,
         is_admin=False,
+        phone="+79000000000",
         contribution=0
     ) -> None:
     """Create a new account for an user"""
@@ -30,6 +31,7 @@ async def create_user(
     else:
         await User.create(
             email=email,
+            phone=phone,
             hashed_password=hashed_password.decode("utf-8"),
             first_name=first_name,
             second_name=second_name,
