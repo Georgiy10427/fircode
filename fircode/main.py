@@ -13,6 +13,8 @@ from typing import List
 from fastapi.middleware.cors import CORSMiddleware
 from fircode.session import Session, session_responses
 from fastapi.templating import Jinja2Templates
+from tortoise.contrib.fastapi import HTTPNotFoundError
+from tortoise.exceptions import DoesNotExist
 
 
 app: FastAPI = FastAPI(title="root app")
@@ -87,6 +89,15 @@ async def get_all_dogs():
     return await Dog.all()
 
 
+@api_app.get("/dog/{dog_id}", response_model=DogOut, responses={404: {"model": HTTPNotFoundError}})
+async def get_dog_by_id(dog_id: int):
+    """Provide full information about dog by id"""
+    try:
+        await DogOut.from_queryset_single(Dog.get(id=dog_id))
+    except DoesNotExist:
+        return JSONResponse(status_code=404, content="Dog with this id doesn't exist")
+
+
 @api_app.post("/dog", responses={**session_responses, 405: {"Method not allowed": {}}})
 async def add_dog(request: Request, new_dog: DogIn):
     """Add dog"""
@@ -117,7 +128,7 @@ async def update_dog(request: Request, new_instance: DogOut):
         return JSONResponse(status_code=405, content="You doesn't have permissions to add dog")
 
 
-@api_app.delete("/dog")
+@api_app.delete("/dog/{dog_id}")
 async def delete_dog(request: Request, dog_id: int):
     """Delete dog from shelter"""
     session = Session()
