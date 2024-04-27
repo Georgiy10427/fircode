@@ -7,6 +7,8 @@ from pydantic import BaseModel, StringConstraints, EmailStr
 from pydantic_extra_types.phone_numbers import PhoneNumber
 from enum import Enum
 from datetime import date
+from tortoise import Tortoise
+from typing import Optional
 
 
 class User(models.Model):
@@ -54,7 +56,7 @@ class Dog(models.Model):
 
 class FeedRequest(models.Model):
     id = fields.IntField(pk=True)
-    actor_email = fields.ForeignKeyField("shelter.User")
+    actor = fields.ForeignKeyField("shelter.User", related_name="actor")
     feed_amount = fields.IntField()
     arrived_at = fields.DateField()
     approved = fields.BooleanField(default=False)
@@ -75,14 +77,18 @@ class SignInRequest(BaseModel):
 
 
 class FeedRequestIn(BaseModel):
-    actor_id: int
-    target_email: EmailStr
+    target_id: int
     feed_amount: int
-    approved: bool
     arrived_at: date
+
+
+class FeedRequestApproveRequest(BaseModel):
+    id: int
+    approved: bool
+    award: int
 
 
 UserResponse = pydantic_model_creator(User, name="User")
 DogIn = pydantic_model_creator(Dog, exclude_readonly=True, name="Dog")
-DogOut = pydantic_model_creator(Dog, name="User")
-
+DogOut = pydantic_model_creator(Dog, name="DogOut")
+FeedRequestResponse = pydantic_model_creator(FeedRequest, allow_cycles=True, name="FeedRequestResponse")
