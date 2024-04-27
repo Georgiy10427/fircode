@@ -77,6 +77,21 @@ async def current_user(request: Request):
     return session.user
 
 
+@api_app.get("/user/{email}", response_model=UserResponse, responses={404: {"model": HTTPNotFoundError}})
+async def get_user_by_email(email: EmailStr):
+    """Provide user information by email"""
+    try:
+        return await UserResponse.from_queryset_single(User.get(email=email))
+    except DoesNotExist:
+        return JSONResponse(status_code=404, content="User with this email doesn't exist")
+
+
+@api_app.get("/users_stat", response_model=List[UserResponse])
+async def get_users_stat():
+    """Provide information about users"""
+    return await UserResponse.from_queryset(User.all().order_by("contribution"))
+
+
 @api_app.post("/logout")
 async def logout(request: Request):
     """Logout from current user"""
