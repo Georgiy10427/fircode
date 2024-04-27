@@ -5,6 +5,7 @@ from tortoise.contrib.pydantic import pydantic_model_creator
 from typing_extensions import Annotated
 from pydantic import BaseModel, StringConstraints, EmailStr
 from pydantic_extra_types.phone_numbers import PhoneNumber
+from enum import Enum
 
 
 class User(models.Model):
@@ -34,12 +35,16 @@ class SessionToken(models.Model):
         table = "session_token"
 
 
-# TODO: add description
+class Gender(str, Enum):
+    male = 'male'
+    female = 'female'
+
+
 class Dog(models.Model):
     id = fields.IntField(pk=True)
     name = fields.CharField(min_lenght=1, max_length=32)
     photo = fields.TextField(default="dog_photo.png")
-    gender = fields.CharField(min_lenght=4, max_length=6)
+    gender = fields.CharEnumField(enum_type=Gender, max_length=10)
     age = fields.IntField()
     description = fields.TextField(max_lenght=1024)
     feed_amount = fields.IntField(default=0)

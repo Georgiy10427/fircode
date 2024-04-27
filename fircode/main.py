@@ -93,8 +93,11 @@ async def add_dog(request: Request, new_dog: DogIn):
     session = Session()
     await session.get_from_request(request)
     if session.user.is_admin:
-        dog = await Dog.create(**new_dog.dict(exclude_unset=True))
-        return dog
+        if new_dog.gender in ("male", "female"):
+            dog = await Dog.create(**new_dog.dict(exclude_unset=True))
+            return dog
+        else:
+            return JSONResponse(status_code=422, content="Gender isn't valid")
     else:
         return JSONResponse(status_code=405, content="You doesn't have permissions to add dog")
 
@@ -105,8 +108,11 @@ async def update_dog(request: Request, new_instance: DogOut):
     session = Session()
     await session.get_from_request(request)
     if session.user.is_admin:
-        await Dog.filter(id=new_instance.id).update(**new_instance.model_dump(exclude={"id"}))
-        return await DogOut.from_queryset_single(Dog.get(id=new_instance.id))
+        if new_instance.gender in ("male", "female"):
+            await Dog.filter(id=new_instance.id).update(**new_instance.model_dump(exclude={"id"}))
+            return await DogOut.from_queryset_single(Dog.get(id=new_instance.id))
+        else:
+            return JSONResponse(status_code=422, content="Gender isn't valid")
     else:
         return JSONResponse(status_code=405, content="You doesn't have permissions to add dog")
 
