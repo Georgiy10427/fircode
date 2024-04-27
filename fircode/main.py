@@ -9,21 +9,19 @@ from fircode.exceptions import UserAlreadyExists
 from fastapi.exceptions import HTTPException
 
 
-app: FastAPI = FastAPI()
-app.mount("/static", StaticFiles(directory="frontend"), name="static")
-templates = Jinja2Templates(directory="frontend")
+app: FastAPI = FastAPI(title="root app")
+api_app: FastAPI = FastAPI(title="api app")
+
+app.mount("/api", api_app)
+app.mount("/", StaticFiles(directory="frontend", html=True), name="static")
 
 initialize_database(app)
 app.router.on_startup.append(database_setup)
 
 
-@app.get("/")
-def index_page(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
-
-
-@app.post("/registration")
+@api_app.post("/registration")
 async def user_registration(new_user: UserRegistrationRequest):
+    print("Request")
     try:
         await create_user(
             email=new_user.email,
