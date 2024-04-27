@@ -3,7 +3,7 @@ from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fircode.startup import initialize_database, database_setup
-from fircode.models import UserRegistrationRequest, SignInRequest
+from fircode.models import UserRegistrationRequest
 from fircode.user_utils import create_user
 from fircode.exceptions import UserAlreadyExists
 from fastapi.exceptions import HTTPException
