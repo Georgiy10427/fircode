@@ -38,3 +38,11 @@ class UserRegistrationRequest(BaseModel):
     first_name: Annotated[str, StringConstraints(min_length=2, max_length=64)]
     second_name: Annotated[str, StringConstraints(min_length=2, max_length=64)]
     password: Annotated[str, StringConstraints(min_length=1, max_length=512)]
+
+
+class SignInRequest(BaseModel):
+    email: EmailStr
+    password: Annotated[str, StringConstraints(min_length=1, max_length=512)]
+
+
+UserResponse = pydantic_model_creator(User)
