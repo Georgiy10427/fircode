@@ -18,7 +18,7 @@ session_responses = {
 
 
 class Session:
-    user: User
+    user: UserResponse
     token: str
 
     def __init__(self, token = None):

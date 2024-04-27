@@ -51,6 +51,7 @@ async def user_registration(new_user: UserRegistrationRequest):
     try:
         await create_user(
             email=new_user.email,
+            phone=new_user.phone_number,
             password=new_user.password,
             first_name=new_user.first_name,
             second_name=new_user.second_name,

@@ -6,12 +6,13 @@ from typing_extensions import Annotated
 from pydantic import BaseModel, StringConstraints, EmailStr
 from pydantic_extra_types.phone_numbers import PhoneNumber
 from enum import Enum
+from datetime import date
 
 
 class User(models.Model):
     """User model"""
     email = fields.CharField(min_length=4, max_length=MAX_EMAIL_LENGTH, unique=True, pk=True)
-    phone = fields.CharField(min_lenght=4, max_length=15)
+    phone = fields.CharField(min_lenght=4, max_length=32)
     first_name = fields.CharField(min_length=2, max_length=64)
     second_name = fields.CharField(min_length=2, max_length=64)
     is_admin = fields.BooleanField()
@@ -51,6 +52,15 @@ class Dog(models.Model):
     host = fields.ForeignKeyField("shelter.User", null=True)
 
 
+class FeedRequest(models.Model):
+    id = fields.IntField(pk=True)
+    actor_email = fields.ForeignKeyField("shelter.User")
+    feed_amount = fields.IntField()
+    arrived_at = fields.DateField()
+    approved = fields.BooleanField(default=False)
+    target = fields.ForeignKeyField("shelter.Dog")
+
+
 class UserRegistrationRequest(BaseModel):
     email: EmailStr
     phone_number: PhoneNumber
@@ -64,6 +74,15 @@ class SignInRequest(BaseModel):
     password: Annotated[str, StringConstraints(min_length=1, max_length=512)]
 
 
-UserResponse = pydantic_model_creator(User)
+class FeedRequestIn(BaseModel):
+    actor_id: int
+    target_email: EmailStr
+    feed_amount: int
+    approved: bool
+    arrived_at: date
+
+
+UserResponse = pydantic_model_creator(User, name="User")
 DogIn = pydantic_model_creator(Dog, exclude_readonly=True, name="Dog")
-DogOut = pydantic_model_creator(Dog)
+DogOut = pydantic_model_creator(Dog, name="User")
+
