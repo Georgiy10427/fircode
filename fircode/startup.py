@@ -1,12 +1,10 @@
-from fircode import config
-from tortoise.contrib.fastapi import register_tortoise
 from fastapi import FastAPI
 from fastapi.logger import logger
+from tortoise.contrib.fastapi import register_tortoise
+
+from fircode import config
 from fircode import user_utils
 from fircode.exceptions import UserAlreadyExists
-from tortoise.exceptions import IncompleteInstanceError
-from datetime import date
-from fircode import user_utils
 from fircode.models import *
 
 
@@ -67,4 +65,3 @@ async def database_setup() -> None:
             await Dog.create(name="Маня", age=6, description="Игривая, ласковая, но строгая",
                              gender=Gender.female, feed_amount=1, arrived_at=date(year=2024, month=4, day=28),
                              host=test_user_model)
-
