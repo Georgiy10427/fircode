@@ -1,0 +1,3 @@
+[submodule "fircode-frontend"]
+	path = fircode-frontend
+	url = https://github.com/Nikonell/fircode-frontend
