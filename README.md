@@ -54,4 +54,5 @@ networks:
   net:
     external: false
 ```
-You need to create certs via LetsEncrypt and mount it into docker container. Nginx repo placed in the repository with ```shelter.conf```  
+You need to create certs via LetsEncrypt and mount it into docker container. Nginx repo placed in the repository with ```shelter.conf```
+Also you need provide `.env` file with database credentials from docker-compose.yaml.
