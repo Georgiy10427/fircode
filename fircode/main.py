@@ -7,7 +7,6 @@ from fastapi.exceptions import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.templating import Jinja2Templates
-from tortoise.contrib.fastapi import HTTPNotFoundError
 from tortoise.exceptions import DoesNotExist
 from tortoise.transactions import in_transaction
 
@@ -79,19 +78,11 @@ async def current_user(request: Request):
     return session.user
 
 
-@api_app.get("/user/{email}", response_model=UserResponse, responses={404: {"model": HTTPNotFoundError}})
-async def get_user_by_email(email: EmailStr):
-    """Provide user information by email"""
-    try:
-        return await UserResponse.from_queryset_single(User.get(email=email))
-    except DoesNotExist:
-        return JSONResponse(status_code=404, content="User with this email doesn't exist")
-
-
-@api_app.get("/users_stat", response_model=List[UserResponse])
+@api_app.get("/users_stat", response_model=List[UserResponseForStat])
 async def get_users_stat():
     """Provide information about users"""
-    return await UserResponse.from_queryset(User.all().order_by("-contribution"))
+    """Exclude fields email, phone and is_admin from response"""
+    return await UserResponseForStat.from_queryset(User.all().order_by("-contribution"))
 
 
 @api_app.post("/logout")
@@ -100,7 +91,7 @@ async def logout(request: Request):
     return await Session().close_session(request)
 
 
-@api_app.get("/dogs")
+@api_app.get("/dogs", response_model=List[DogOut])
 async def get_all_dogs():
     """Provide list of all dogs"""
     return await DogOut.from_queryset(Dog.all().order_by("feed_amount"))
@@ -131,7 +122,7 @@ async def add_dog(request: Request, new_dog: DogIn):
 
 
 @api_app.put("/dog", responses={**session_responses, 405: {"Method not allowed": {}}})
-async def update_dog(request: Request, new_instance: DogOut):
+async def update_dog(request: Request, new_instance: DogUpdateIn):
     """Update an instance of the dog"""
     session = Session()
     await session.get_from_request(request)
@@ -142,7 +133,7 @@ async def update_dog(request: Request, new_instance: DogOut):
         else:
             return JSONResponse(status_code=422, content="Gender isn't valid")
     else:
-        return JSONResponse(status_code=405, content="You doesn't have permissions to add dog")
+        return JSONResponse(status_code=405, content="You doesn't have permissions to update dog")
 
 
 @api_app.delete("/dog/{dog_id}")
@@ -156,20 +147,19 @@ async def delete_dog(request: Request, dog_id: int):
         return JSONResponse(status_code=405, content="You doesn't have permissions to delete dog")
 
 
-@api_app.get("/feed_requests")
+@api_app.get("/feed_requests", response_model=List[FeedRequestResponse])
 async def get_users_feed_requests():
     """Provide all feed requests from users"""
     return await FeedRequestResponse.from_queryset(FeedRequest.all().order_by("arrived_at"))
 
 
-@api_app.get("/feed_requests/current")
+@api_app.get("/feed_requests/current", response_model=List[FeedRequestResponse])
 async def get_user_feed_requests(request: Request):
     """Provide all feed requests from current user"""
     session = Session()
     await session.get_from_request(request)
     current_user = await User.get(email=session.user.email)
-    requests = await FeedRequest.filter(actor=current_user).order_by("arrived_at").prefetch_related("actor")
-    return requests
+    return await FeedRequestResponse.from_queryset(FeedRequest.filter(actor=current_user).order_by("arrived_at"))
 
 
 @api_app.post("/feed_request")

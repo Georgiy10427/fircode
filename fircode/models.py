@@ -1,14 +1,14 @@
+from datetime import date
+from enum import Enum
+
+from pydantic import BaseModel, StringConstraints, EmailStr
 from pydantic.networks import MAX_EMAIL_LENGTH
+from pydantic_extra_types.phone_numbers import PhoneNumber
+from tortoise import Tortoise
 from tortoise import fields
 from tortoise import models
 from tortoise.contrib.pydantic import pydantic_model_creator
 from typing_extensions import Annotated
-from pydantic import BaseModel, StringConstraints, EmailStr
-from pydantic_extra_types.phone_numbers import PhoneNumber
-from enum import Enum
-from datetime import date
-from tortoise import Tortoise
-from typing import Optional
 
 
 class User(models.Model):
@@ -88,7 +88,15 @@ class FeedRequestApproveRequest(BaseModel):
     award: int
 
 
-UserResponse = pydantic_model_creator(User, name="User")
-DogIn = pydantic_model_creator(Dog, exclude_readonly=True, name="Dog")
-DogOut = pydantic_model_creator(Dog, name="DogOut")
-FeedRequestResponse = pydantic_model_creator(FeedRequest, allow_cycles=True, name="FeedRequestResponse")
+Tortoise.init_models(["fircode.models"], "shelter")
+
+UserResponse = pydantic_model_creator(User, name="User", exclude=("actor", "session_tokens", "dogs.feedrequests"))
+UserResponseForStat = pydantic_model_creator(User, name="UserResponseForStat",
+                                             exclude=("is_admin", "email", "phone", "actor", "session_tokens",
+                                                      "dogs.feedrequests"))
+DogIn = pydantic_model_creator(Dog, exclude_readonly=True, name="DogIn", exclude=("host", "host_id"))
+DogOut = pydantic_model_creator(Dog, name="DogOut", exclude=(
+    "host.email", "host.phone", "host.is_admin", "host.actor", "host.session_tokens", "feedrequests",))
+DogUpdateIn = pydantic_model_creator(Dog, name="DogUpdateIn", exclude=("host", "feedrequests", "host_id"))
+FeedRequestResponse = pydantic_model_creator(FeedRequest, name="FeedRequestResponse",
+                                             exclude=("actor.session_tokens", "actor.dogs", "target.host"))
