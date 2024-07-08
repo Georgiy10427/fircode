@@ -11,7 +11,7 @@
 0. [Install Poetry](https://python-poetry.org/docs/#installation)
 1. Clone this repository and open it into the IDE
 2. Pycharm will suggest you to resolve dependencies with Poetry. You need to agree.
-3. Setup Postgres or add `USE_SQLITE = "False"` to `.env`
+3. Setup Postgres or add `USE_SQLITE = "True"` to `.env`
 4. Setup FastAPI configuration like that:
 ![Pycharm configuration](pycharm_setup.png)
 
