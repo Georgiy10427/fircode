@@ -1,10 +1,10 @@
-# Ёлкин код
+# Shelter
 **Attention**: use ```git clone --recurse-submodules https://github.com/Georgiy10427/fircode.git``` to clone this repo with submodules
 ## Installation (CLI)
 0. [Install Poetry](https://python-poetry.org/docs/#installation)
 1. Clone this repository and go into this one in a console
 2. Install dependencies: `poetry install`
-3. Setup Postgres or add `USE_SQLITE = "False"` to `.env`
+3. Setup Postgres or add `USE_SQLITE = "True"` to `.env`
 4. Run server (in the root of this repo): `poetry run start`
 
 ## Installation (Pycharm)
